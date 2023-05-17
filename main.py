@@ -11,9 +11,10 @@ def main():
 
     # Creazione dell'importer e importazione dei dati
     importer = CSVImporter(db)
-    #importer.import_prices(prices_url)
+    importer.import_prices(prices_url)
 
     locations_url = 'https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv'
+    importer.import_locations(locations_url)
 
     #importer.import_locations(locations_url)
 

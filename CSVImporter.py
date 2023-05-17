@@ -71,7 +71,7 @@ class CSVImporter:
 
         print("Preparing query")
         # Inserimento dei dati nel database
-        insert_query = "INSERT INTO `locations` VALUES (%s)"
+        insert_query = "INSERT INTO `locations` VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         csv_reader = csv.reader(csv_data, delimiter=";")
 
         # Salta l'intestazione del CSV
@@ -80,8 +80,12 @@ class CSVImporter:
 
         print("Adding values to database")
 
-        for row in csv_data:
-            cursor.execute(insert_query, [row])
+        for row in csv_reader:
+            try:
+                cursor.execute(insert_query, row)
+            except BaseException as e:
+                print(f"Failed to import row: {row} with error {e}")
+                continue
 
         connection.commit()
 
