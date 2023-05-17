@@ -14,39 +14,21 @@ class GasFinder:
         if response.status_code == 200:
             data = response.json()
             if data:
-                self.coordinates = (float(data[0]['lon']), float(data[0]['lat']))
-
-    def find_nearest_gas_station(self, gas_stations):
+                self.lon = float(data[0]['lon'])
+                self.lat = float(data[0]['lat'])
+    
+    def find_nearest(self):
         self.get_coordinates()
         if self.coordinates is None:
             raise ValueError("Coordinate non disponibili. Eseguire 'get_coordinates()' prima.")
+        
+        nearest = None
+        
+        query = f"SELECT *, (6371 * acos(cos(radians({self.lat})) * cos(radians(latitudine)) * cos(radians(longitudine) - radians({self.lon})) + sin(radians({self.lat})) * sin(radians(latitudine)))) AS distanza FROM locations ORDER BY distanza LIMIT 1;"
 
-        min_distance = float('inf')
-        nearest_station = None
+        result = self.db.execute_query(query)
 
-        for station in gas_stations:
-            if station['fuel_type'] == self.fuel_type:
-                station_coordinates = (float(station['longitude']), float(station['latitude']))
-                distance = geodesic(self.coordinates, station_coordinates).km
-                if distance < min_distance:
-                    min_distance = distance
-                    nearest_station = station
-
-        return nearest_station
-
-"""
-fuel_type = 'gasolio'
-city = 'Italia'
-gas_stations = [
-    {'fuel_type': 'gasolio', 'longitude': '12.4923', 'latitude': '41.8902'},
-    {'fuel_type': 'benzina', 'longitude': '12.4861', 'latitude': '41.8947'},
-    {'fuel_type': 'diesel', 'longitude': '12.4878', 'latitude': '41.8955'},
-    {'fuel_type': 'gasolio', 'longitude': '12.4987', 'latitude': '41.8921'},
-]
-
-gas_finder = GasFinder(fuel_type, city)
-gas_finder.get_coordinates()
-nearest_station = gas_finder.find_nearest_gas_station(gas_stations)
-print("Distributore più vicino:")
-print(nearest_station)
-"""
+        if result:
+            # Estraggo il nome del benzinaio più vicin
+            nearest = result[0][0]
+            return nearest
